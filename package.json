@@ -5,7 +5,7 @@
   "scripts": {
     "test": "jest",
     "cover": "NODE_ENV=test npm t -- --coverage",
-    "bootstrap": "lerna bootstrap --npm-client=yarn --hoist",
+    "bootstrap": "lerna bootstrap --hoist",
     "clean": "lerna clean",
     "flow": "flow",
     "eslint": "eslint ./",
