@@ -2,9 +2,9 @@
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 600000;
 
-if (process.env.RUNNER === 'CI') {
-  const jasmineReporters = require('jasmine-reporters');
+import jasmineReporters from 'jasmine-reporters';
 
+if (process.env.RUNNER === 'CI') {
   jasmine.VERBOSE = true;
   jasmine.getEnv().addReporter(
     new jasmineReporters.JUnitXmlReporter({
