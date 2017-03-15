@@ -13,5 +13,6 @@ do
     rm -rf node_modules
     yarn install
     yarn run bootstrap
+    yarn run build
     yarn run cover
 done
