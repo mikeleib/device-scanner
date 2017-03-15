@@ -63,10 +63,10 @@ let rec getNextMatch (buff:string, callback:Callback, turn:int) =
       )
       getNextMatch(b, callback, turn + 1)
 
-let mutable private buff:string = ""
 
-type LineDelimitedJsonStream() as self =
-  inherit stream.Transform(getOpts ())
+type LineDelimitedJsonStream(x:string) as self =
+  inherit stream.Transform(getOpts())
+  let mutable buff = x
   member __._transform (chunk: Buffer, encoding: String, callback:Callback) : unit =
     buff <- getNextMatch(
       buff + chunk.toString("utf-8"),
@@ -87,4 +87,4 @@ type LineDelimitedJsonStream() as self =
           (fun e -> callback.Invoke(Some(e), None))
         )
 
-let getJsonStream _ = LineDelimitedJsonStream()
+let getJsonStream () = LineDelimitedJsonStream("")

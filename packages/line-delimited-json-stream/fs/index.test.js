@@ -50,9 +50,7 @@ describe('line delimited json stream', () => {
     jsonStream
       .on('data', done.fail)
       .on('error', e => {
-        expect(e).toEqual(
-          new SyntaxError('Unexpected token { in JSON at position 25')
-        );
+        expect(e).toEqual(new SyntaxError('Unexpected end of JSON input'));
       })
       .on('end', done);
 

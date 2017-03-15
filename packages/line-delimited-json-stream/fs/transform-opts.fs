@@ -23,7 +23,7 @@ module LineDelimitedJsonStream.Opts
 
 open Fable.Import.Node
 
-let getOpts _ =
+let getOpts () =
   let mutable objectMode = Some(true)
   let mutable encoding = None
   let mutable decodeStrings = None

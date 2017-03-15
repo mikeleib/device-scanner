@@ -13,7 +13,6 @@
     "rollup-client": "rollup -c rollup-config.js --output='dist/send-change.js' -- source/send-change.js"
   },
   "pre-commit": [
-    "flow",
     "eslint",
     "test"
   ],
