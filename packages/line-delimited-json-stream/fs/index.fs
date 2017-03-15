@@ -1,6 +1,4 @@
-﻿module LineDelimitedJsonStream.Stream
-
-// INTEL CONFIDENTIAL
+﻿// INTEL CONFIDENTIAL
 //
 // Copyright 2013-2017 Intel Corporation All Rights Reserved.
 //
@@ -19,6 +17,8 @@
 // of the Materials, either expressly, by implication, inducement, estoppel or
 // otherwise. Any license under such intellectual property rights must be
 // express and approved by Intel in writing.
+
+module LineDelimitedJsonStream.Stream
 
 open System
 open Fable.Import.Node
