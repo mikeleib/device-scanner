@@ -1,21 +1,17 @@
-// @flow
-
 import { describe, beforeEach, it, expect } from '../../../jasmine.js';
-
-import type { doneT } from 'jasmine';
 
 import streamToPromise from 'stream-to-promise';
 
-import getJsonStream from './line-delimited-json-stream.js';
+import { getJsonStream } from '../dist/bundle.js';
 
 describe('line delimited json stream', () => {
   let jsonStream;
 
-  beforeEach((): void => {
+  beforeEach(() => {
     jsonStream = getJsonStream();
   });
 
-  it('should handle JSON in a single chunk', async (): Promise<mixed> => {
+  it('should handle JSON in a single chunk', async () => {
     jsonStream.end('{ "foo": "bar", "bar": "baz" }\n');
 
     const result: mixed = await streamToPromise(jsonStream);
@@ -23,7 +19,7 @@ describe('line delimited json stream', () => {
     expect(result).toEqual([{ bar: 'baz', foo: 'bar' }]);
   });
 
-  it('should handle chunks of JSON', async (): Promise<mixed> => {
+  it('should handle chunks of JSON', async () => {
     jsonStream.write('{ "foo": "bar", ');
     jsonStream.end('"bar": "baz" }\n');
 
@@ -32,7 +28,7 @@ describe('line delimited json stream', () => {
     expect(result).toEqual([{ bar: 'baz', foo: 'bar' }]);
   });
 
-  it('should handle newlines in a string', async (): Promise<mixed> => {
+  it('should handle newlines in a string', async () => {
     jsonStream.end(JSON.stringify({ foo: 'bar\n', bar: 'baz' }) + '\n');
 
     const result = await streamToPromise(jsonStream);
@@ -40,23 +36,20 @@ describe('line delimited json stream', () => {
     expect(result).toEqual([{ bar: 'baz', foo: 'bar\n' }]);
   });
 
-  it(
-    'should handle the final json line without a newline',
-    async (): Promise<mixed> => {
-      jsonStream.end(JSON.stringify({ foo: 'bar', bar: 'baz' }));
+  it('should handle the final json line without a newline', async () => {
+    jsonStream.end(JSON.stringify({ foo: 'bar', bar: 'baz' }));
 
-      const result = await streamToPromise(jsonStream);
+    const result = await streamToPromise(jsonStream);
 
-      expect(result).toEqual([{ bar: 'baz', foo: 'bar' }]);
-    }
-  );
+    expect(result).toEqual([{ bar: 'baz', foo: 'bar' }]);
+  });
 
-  it('should handle errors from the stream', (done: doneT): void => {
+  it('should handle errors from the stream', (done: doneT) => {
     expect.assertions(1);
 
     jsonStream
       .on('data', done.fail)
-      .on('error', (e: SyntaxError): void => {
+      .on('error', e => {
         expect(e).toEqual(new SyntaxError('Unexpected end of JSON input'));
       })
       .on('end', done);
@@ -66,7 +59,7 @@ describe('line delimited json stream', () => {
     jsonStream.end();
   });
 
-  it('should handle multiple records correctly', async (): Promise<mixed> => {
+  it('should handle multiple records correctly', async () => {
     jsonStream.write('{ "foo": "bar", ');
     jsonStream.write('"bar": "baz" }\n');
     jsonStream.end('{"baz": "bap"}');

@@ -2,14 +2,17 @@
   "name": "@iml/line-delimited-json-stream",
   "version": "1.0.0",
   "description": "A Transform stream that buffers JSON objects. It will emit a completed object on a newline.",
-  "main": "lib/index.js",
+  "scripts": {
+    "build": "fable"
+  },
   "publishConfig": {
     "registry": "https://ubit-artifactory-or.intel.com/artifactory/api/npm/iml-npm-local"
   },
   "repository": "https://github.intel.com:IML/device-scanner/packages/line-delimited-json-stream",
   "author": "IML Team",
   "license": "MIT",
-  "dependencies": {
-    "@iml/fp": "8.0.0"
+  "devDependencies": {
+    "fable-compiler": "0.7.49",
+    "fable-core": "0.7.29"
   }
 }

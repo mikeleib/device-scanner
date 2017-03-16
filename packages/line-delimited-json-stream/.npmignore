@@ -1,3 +1,6 @@
 *.log
 *.test.js
 yarn.lock
+dist
+.vscode
+obj
