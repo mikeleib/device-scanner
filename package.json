@@ -3,12 +3,12 @@
   "author": "IML Team",
   "private": true,
   "scripts": {
-    "test": "jest",
-    "cover": "NODE_ENV=test npm t -- --coverage",
-    "bootstrap": "lerna bootstrap --npm-client=yarn",
-    "build": "lerna exec --scope @iml/line-delimited-json-stream -- yarn run build",
+    "prejest": "sendProjFile",
+    "jest": "jest",
+    "test": "dotnet fable npm-run jest",
+    "bootstrap": "lerna bootstrap",
+    "restore": "dotnet restore && lerna exec -- dotnet restore",
     "clean": "lerna clean",
-    "flow": "flow",
     "eslint": "eslint ./",
     "rollup-client": "rollup -c rollup-config.js --output='dist/send-change.js' -- source/send-change.js"
   },
@@ -16,40 +16,47 @@
     "eslint",
     "test"
   ],
+  "fable": {
+    "projLocation": "./DeviceScanner.fsproj"
+  },
   "jest": {
+    "testEnvironment": "node",
     "setupTestFrameworkScriptFile": "./setup-jasmine-env.js",
-    "resetModules": true,
-    "coveragePathIgnorePatterns": [
-      "/node_modules/",
-      "./setup-jasmine-env.js",
-      "test"
+    "moduleFileExtensions": [
+      "js",
+      "fs",
+      "fsx"
+    ],
+    "transform": {
+      "^.+\\.(fs|fsx)$": "jest-fable-preprocessor",
+      "^.+\\.js$": "babel-jest"
+    },
+    "testMatch": [
+      "**/**/*.(test.fs|test.fsx)"
     ],
     "transformIgnorePatterns": [
-      "/node_modules/(?!@iml)/"
+      "node_modules/(?!fable.+)/"
     ]
   },
   "devDependencies": {
-    "babel-eslint": "7.1.1",
-    "babel-plugin-external-helpers": "6.22.0",
-    "babel-plugin-transform-flow-strip-types": "6.22.0",
-    "babel-plugin-transform-object-rest-spread": "6.23.0",
-    "babel-preset-env": "1.2.2",
-    "eslint": "3.17.1",
-    "eslint-config-prettier": "1.5.0",
-    "eslint-plugin-flowtype": "2.30.3",
-    "eslint-plugin-import": "2.2.0",
+    "babel-preset-env": "1.3.3",
+    "eslint": "3.19.0",
+    "eslint-config-prettier": "1.6.0",
     "eslint-plugin-prettier": "2.0.1",
-    "flow-bin": "0.41.0",
-    "intel-jasmine-n-matchers": "2.1.1",
-    "jasmine-reporters": "2.2.0",
+    "fable-core": "next",
+    "fable-jest": "2.4.1",
+    "fable-node6": "2.1.0",
+    "fable-powerpack": "next",
+    "jasmine-reporters": "2.2.1",
     "jest": "19.0.2",
-    "lerna": "2.0.0-beta.38",
+    "jest-fable-preprocessor": "1.1.0",
+    "lerna": "2.0.0-rc.1",
     "pre-commit": "1.2.2",
     "prettier": "0.22.0",
-    "rollup": "0.41.5",
+    "rollup": "0.41.6",
     "rollup-plugin-babel": "2.7.1",
     "rollup-plugin-cleanup": "1.0.0",
-    "rollup-plugin-node-resolve": "2.0.0",
+    "rollup-plugin-node-resolve": "3.0.0",
     "stream-to-promise": "2.2.0"
   }
 }

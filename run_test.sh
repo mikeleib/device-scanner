@@ -1,18 +1,4 @@
 #!/usr/bin/env bash
 
-. ~/.nvm/nvm.sh
-
-NODE_VERSIONS="
-6
-stable
-"
-
-for node_version in $NODE_VERSIONS
-do
-    nvm use $node_version
-    rm -rf node_modules
-    yarn install
-    yarn run bootstrap
-    yarn run build
-    yarn run cover
-done
+/var/lib/jenkins/docker run hub.docker.intel.com/iml/centos7_3 ${PWD}/:/device-scanner false "cd /device-scanner; rm -rf node_modules; rm -rf obj; rm -rf bin; yarn install; yarn run restore; RUNNER=CI yarn run test"
+mv device-scanner*.xml ../results
