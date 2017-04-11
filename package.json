@@ -10,7 +10,7 @@
     "restore": "dotnet restore && lerna exec -- dotnet restore",
     "clean": "lerna clean",
     "eslint": "eslint ./",
-    "rollup-client": "rollup -c rollup-config.js --output='dist/send-change.js' -- source/send-change.js"
+    "rollup": "rollup -c rollup-config.js"
   },
   "pre-commit": [
     "eslint",
@@ -39,6 +39,7 @@
     ]
   },
   "devDependencies": {
+    "babel-core": "6.24.1",
     "babel-preset-env": "1.3.3",
     "eslint": "3.19.0",
     "eslint-config-prettier": "1.6.0",
@@ -54,9 +55,7 @@
     "pre-commit": "1.2.2",
     "prettier": "0.22.0",
     "rollup": "0.41.6",
-    "rollup-plugin-babel": "2.7.1",
-    "rollup-plugin-cleanup": "1.0.0",
-    "rollup-plugin-node-resolve": "3.0.0",
+    "rollup-plugin-fable": "1.0.0",
     "stream-to-promise": "2.2.0"
   }
 }
