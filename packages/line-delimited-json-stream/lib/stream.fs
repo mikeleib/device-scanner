@@ -21,70 +21,74 @@
 module LineDelimitedJsonStream.Stream
 
 open System
-open Fable.Import.Node
+open Node.Stream
+open Fable.Import.JS
 open Fable.Core.JsInterop
 open System.Text.RegularExpressions
-open LineDelimitedJsonStream.Opts
 
-type Callback = Func<Option<Exception>, Option<obj>, unit>
+let private matchNewline x = Regex.Match(x, "\\n")
 
-let private matcher x =
-  match Regex.Match(x, "\\n") with
+let private matcher = matchNewline >> function
     | m when m.Success -> Some(m.Index)
     | _ -> None
 
-let adjustBuff (buff:string, index:int) =
+let private adjustBuff (buff:string) (index:int) =
   let out = buff.Substring(0, index)
   let buff = buff.Substring(index + 1)
   (out, buff)
 
-let tryJson (x:string, onSuccess:obj -> unit, onFail) =
+let private tryJson (onSuccess:obj -> unit) onFail (x:string)  =
   try
     let result = ofJson x
     onSuccess(result)
   with
   | ex ->
-    onFail(ex)
+    let err = !!ex
 
-let rec getNextMatch (buff:string, callback:Callback, turn:int) =
+    onFail err
+
+let rec private getNextMatch (buff:string) (callback:Error option -> obj option -> unit) (turn:int) =
   let opt = matcher(buff)
 
   match opt with
     | None ->
       if turn = 0 then
-        callback.Invoke(None, None)
+        callback None None
       buff
     | Some(index) ->
-      let (out, b) = adjustBuff(buff, index)
-      tryJson(
-        out,
-        (fun x -> callback.Invoke(None, Some(x))),
-        (fun e -> callback.Invoke(Some(e), None))
-      )
-      getNextMatch(b, callback, turn + 1)
+      let (out, b) = adjustBuff buff index
 
+      tryJson
+        (fun x -> callback None (Some x))
+        (fun e -> callback (Some e) None )
+        out
 
-type LineDelimitedJsonStream(x:string) as self =
-  inherit stream.Transform(getOpts())
-  let mutable buff = x
-  member __._transform (chunk: Buffer, encoding: String, callback:Callback) : unit =
-    buff <- getNextMatch(
-      buff + chunk.toString("utf-8"),
-      callback,
-      0
-    )
-    member __._flush (callback: Callback): unit =
-      if buff.Length = 0
+      getNextMatch b callback (turn + 1)
+
+let getJsonStream () =
+  let mutable buff = ""
+
+  let opts = createEmpty<stream_types.TransformBufferOptions>
+  opts.readableObjectMode <- Some true
+  opts.transform <- Some(fun chunk encoding callback ->
+    buff <- getNextMatch
+        (buff + chunk.toString("utf-8"))
+        callback
+        0
+  )
+  opts.flush <- Some(fun callback ->
+    if buff.Length = 0
       then
-        callback.Invoke(None, None)
+        callback(None)
       else
-        tryJson(
-          buff,
-          (fun x ->
-            self.push(x) |> ignore
-            callback.Invoke(None, None)
-          ),
-          (fun e -> callback.Invoke(Some(e), None))
-        )
+        let self = Fable.Core.JsInterop.jsThis
 
-let getJsonStream () = LineDelimitedJsonStream("")
+        tryJson
+          (fun x ->
+            self?push x |> ignore
+            callback(None)
+          )
+          (Some >> callback)
+          buff
+  )
+  stream.Transform.Create opts
