@@ -1,15 +1,15 @@
 {
-  "name": "@iml/block-device-listener",
+  "name": "@mfl/block-device-listener",
   "version": "0.0.0",
   "description": "Listens for block device add / removes. Writes to device-scanner-daemon socket.",
-  "main": "dist/index.js",
-  "publishConfig": {
-    "registry": "https://ubit-artifactory-or.intel.com/artifactory/api/npm/iml-npm-local"
-  },
   "scripts": {
-    "prepublish": "cd ../../ && dotnet fable npm-run rollup --args '--output=packages/block-device-listener/dist/bundle.js -- packages/block-device-listener/BlockDeviceListener.fsproj'"
+    "prepublish": "old_pwd=$PWD; cd ../../; dotnet fable npm-run rollup --args \"-i $old_pwd/lib/main.fs -o $old_pwd/$npm_package_main\" --port 'free'; chmod +x $old_pwd/$npm_package_main"
   },
-  "repository": "https://github.intel.com:IML/device-scanner/packages/block-device-listener",
-  "author": "IML Team",
+  "main": "dist/block-device-listener",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": "https://github.com/intel-hpdd/device-scanner/tree/master/packages/block-device-listener",
+  "author": "MFL Team",
   "license": "MIT"
 }
