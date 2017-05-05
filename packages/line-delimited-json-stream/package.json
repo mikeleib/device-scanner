@@ -7,11 +7,5 @@
   },
   "repository": "https://github.com/intel-hpdd/device-scanner/tree/master/packages/line-delimited-json-stream",
   "author": "MFL Team",
-  "license": "MIT",
-  "devDependencies": {
-    "fable-jest": "2.4.1",
-    "fable-node6": "2.1.1",
-    "fable-powerpack": "next",
-    "stream-to-promise": "2.2.0"
-  }
+  "license": "MIT"
 }
