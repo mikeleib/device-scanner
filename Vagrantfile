@@ -70,7 +70,7 @@ Vagrant.configure("2") do |config|
     mv packages/device-scanner-daemon/dist/device-scanner-daemon /sbin
     mv packages/block-device-listener/dist/block-device-listener /lib/udev
     cp packages/block-device-listener/udev-rules/99-mfl-device-scanner.rules /etc/udev/rules.d/
-    cp packages/device-scanner-daemon/systemd-units/* /etc/systemd/system/
+    cp packages/device-scanner-daemon/systemd-units/* /usr/lib/systemd
     systemctl enable device-scanner.socket
     systemctl start device-scanner.socket
   SHELL
