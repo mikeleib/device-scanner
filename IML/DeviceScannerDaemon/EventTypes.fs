@@ -25,6 +25,9 @@ let (|DiskMatch|_|) (x:string) =
   else
     None
 
+[<Erase>]
+type DevPath = DevPath of string
+
 /// The data received from a
 /// udev block device add event
 type AddEvent = {
@@ -34,7 +37,7 @@ type AddEvent = {
   DEVLINKS: string option;
   PATHS: string array option;
   DEVNAME: string;
-  DEVPATH: string;
+  DEVPATH: DevPath;
   DEVTYPE: DevType;
   ID_VENDOR: string option;
   ID_MODEL: string option;
@@ -52,7 +55,7 @@ type AddEvent = {
 type RemoveEvent = {
   ACTION: string;
   DEVLINKS: string option;
-  DEVPATH: string;
+  DEVPATH: DevPath;
   MAJOR: string;
   MINOR: string;
 }
@@ -95,7 +98,9 @@ let private findOrFail (key:string) x =
     | Some(x) -> unwrapString x
     | None -> failwith (sprintf "Could not find key %s in %O" key x)
 
-let trimOpt = Option.map(fun (x:string) -> x.Trim())
+let private emptyStrToNone x = if x = "" then None else Some(x)
+
+let private trimOpt = Option.map(fun (x:string) -> x.Trim())
 
 let private findOrNone key x =
   x |> Map.tryFind key |> Option.bind str
@@ -104,7 +109,7 @@ let private parseMajor = findOrFail "MAJOR"
 let private parseMinor =  findOrFail "MINOR"
 let private parseDevlinks = findOrNone "DEVLINKS"
 let private parseDevName = findOrFail "DEVNAME"
-let private parseDevPath = findOrFail "DEVPATH"
+let private parseDevPath x = findOrFail "DEVPATH" x |> DevPath
 let private parseIdVendor = findOrNone "ID_VENDOR"
 let private parseIdModel = findOrNone "ID_MODEL"
 let private parseIdSerial = findOrNone "ID_SERIAL"
@@ -145,13 +150,6 @@ let extractAddEvent x =
         | _ -> false
       )
 
-  let idFsType =
-    x
-      |> parseIdFsType
-      |> Option.bind(fun x ->
-        if x = "" then None else Some(x)
-      )
-
   {
     ACTION = "add";
     MAJOR = parseMajor x;
@@ -164,9 +162,9 @@ let extractAddEvent x =
     ID_VENDOR = parseIdVendor x;
     ID_MODEL = parseIdModel x;
     ID_SERIAL = parseIdSerial x;
-    ID_FS_TYPE = idFsType;
+    ID_FS_TYPE = parseIdFsType x |> Option.bind(emptyStrToNone);
     ID_PART_ENTRY_NUMBER = parseIdPartEntryNumber x |> Option.map(int);
-    IML_SIZE = parseImlSize x;
+    IML_SIZE = parseImlSize x |> Option.bind(emptyStrToNone);
     IML_IS_RO = imlRo;
     IML_SCSI_80 = parseImlScsi80 x |> trimOpt;
     IML_SCSI_83 = parseImlScsi83 x |> trimOpt;
@@ -186,7 +184,7 @@ let (|RemoveEventMatch|_|) x =
       {
         ACTION = "remove";
         DEVLINKS = parseDevlinks x;
-        DEVPATH = parseDevName x;
+        DEVPATH = parseDevPath x;
         MAJOR = parseMajor x;
         MINOR = parseMinor x;
       }
