@@ -8,6 +8,10 @@ open Fable.Core.JsInterop
 open Fable.PowerPack
 open Fable.Core
 
+module StringUtils =
+    let split (x:char []) (s:string) = s.Split(x)
+    let trim (y:string) = y.Trim()
+
 [<StringEnum>]
 type DevType =
   | Partition
@@ -55,15 +59,18 @@ type ImlScsi80 = ImlScsi80 of string
 type ImlScsi83 = ImlScsi83 of string
 [<Erase>]
 type ImlIsRo = ImlIsRo of bool
-
 [<Erase>]
 type DmMultipathDevicePath = DmMultipathDevicePath of bool
-
 [<Erase>]
 type DmLvName = DmLvName of string
-
 [<Erase>]
 type DmVgName = DmVgName of string
+[<Erase>]
+type DmUuid = DmUuid of string
+[<Erase>]
+type ImlDmSlaveMm = ImlDmSlaveMm of string
+[<Erase>]
+type ImlDmVgSize = ImlDmVgSize of string
 
 let addAction = Action("add")
 let changeAction = Action("change")
@@ -71,7 +78,7 @@ let removeAction = Action("remove")
 let infoAction = Action("info")
 
 
-/// The data received from a
+/// The data emitted after processing a
 /// udev block device add event
 type AddEvent = {
   ACTION: Action;
@@ -91,9 +98,12 @@ type AddEvent = {
   IML_SCSI_80: ImlScsi80 option;
   IML_SCSI_83: ImlScsi83 option;
   IML_IS_RO: ImlIsRo option;
+  IML_DM_SLAVE_MMS: ImlDmSlaveMm [] option;
+  IML_DM_VG_SIZE: ImlDmVgSize option;
   DM_MULTIPATH_DEVICE_PATH: DmMultipathDevicePath option;
   DM_LV_NAME: DmLvName option;
   DM_VG_NAME: DmVgName option;
+  DM_UUID: DmUuid option;
 }
 
 /// The data received from a
@@ -172,15 +182,20 @@ let private parseImlScsi80 = findOrNone "IML_SCSI_80" >> Option.map ImlScsi80
 let private parseImlScsi83 = findOrNone "IML_SCSI_83" >> Option.map ImlScsi83
 let private parseImlRo =
   findOrNone "IML_IS_RO"
-  >> Option.map(isOne >> ImlIsRo)
-
+    >> Option.map(isOne >> ImlIsRo)
+let private parseImlDmSlaveMms =
+  findOrNone "IML_DM_SLAVE_MMS"
+    >> Option.map(StringUtils.split [| ' ' |])
+    >> Option.map(Array.map(StringUtils.trim >> ImlDmSlaveMm))
+let private parseImlDmVgSize = 
+  findOrNone "IML_DM_VG_SIZE" 
+    >> Option.map(StringUtils.trim >> ImlDmVgSize)
 let private parseDmMultipathDevicePath =
   findOrNone "DM_MULTIPATH_DEVICE_PATH"
-  >> Option.map(isOne >> DmMultipathDevicePath)
-
+    >> Option.map(isOne >> DmMultipathDevicePath)
 let private parseDmLvName = findOrNone "DM_LV_NAME" >> Option.map DmLvName
-
 let private parseDmVgName = findOrNone "DM_VG_NAME" >> Option.map DmVgName
+let private parseDmUuid = findOrNone "DM_UUID" >> Option.map DmUuid
 
 let extractAddEvent x =
   let devType =
@@ -196,7 +211,7 @@ let extractAddEvent x =
     | Some(DevLinks(links):DevLinks) ->
       let morePaths:Path array =
         links.Split(' ')
-          |> Array.map((fun x -> x.Trim()) >> Path)
+          |> Array.map(StringUtils.trim >> Path)
 
       Some(Array.concat [[| name |]; morePaths])
     | None -> None
@@ -222,9 +237,12 @@ let extractAddEvent x =
     IML_IS_RO = parseImlRo x
     IML_SCSI_80 = parseImlScsi80 x |> Option.map(fun (ImlScsi80(x)) -> x.Trim() |> ImlScsi80);
     IML_SCSI_83 = parseImlScsi83 x |> Option.map(fun (ImlScsi83(x)) -> x.Trim() |> ImlScsi83);
+    IML_DM_SLAVE_MMS = parseImlDmSlaveMms x;
+    IML_DM_VG_SIZE = parseImlDmVgSize x;
     DM_MULTIPATH_DEVICE_PATH = parseDmMultipathDevicePath x;
     DM_LV_NAME = parseDmLvName x;
     DM_VG_NAME = parseDmVgName x;
+    DM_UUID = parseDmUuid x;
   }
 
 let (|AddOrChangeEventMatch|_|) x =
