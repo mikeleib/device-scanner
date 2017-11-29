@@ -51,10 +51,12 @@ type AddEvent = {
   IML_IS_RO: bool option;
   IML_DM_SLAVE_MMS: string [] option;
   IML_DM_VG_SIZE: string option;
+  IML_MD_DEVICES: string [];
   DM_MULTIPATH_DEVICE_PATH: bool option;
   DM_LV_NAME: string option;
   DM_VG_NAME: string option;
   DM_UUID: string option;
+  MD_UUID: string option;
 }
 
 let private isOne = function
@@ -65,6 +67,12 @@ let private tryFindStr = tryFindJson str
 
 let private parseDevName = findStr "DEVNAME" >> Path
 let private parseDevPath = findStr "DEVPATH" >> DevPath
+let private parseMdDevices x =
+  x
+    |> Map.filter (fun (k:string) _ -> k.StartsWith("MD_DEVICE_"))
+    |> Map.filter (fun (k:string) _ -> k.EndsWith("_DEV"))
+    |> Map.toArray
+    |> Array.map (snd >> unwrapString)
 
 let extractAddEvent x =
   let devType =
@@ -103,10 +111,12 @@ let extractAddEvent x =
       |> Option.map(split [| ' ' |])
       |> Option.map(Array.map(trim));
     IML_DM_VG_SIZE = tryFindStr "IML_DM_VG_SIZE" x |> Option.map(trim);
+    IML_MD_DEVICES = parseMdDevices x;
     DM_MULTIPATH_DEVICE_PATH = tryFindStr "DM_MULTIPATH_DEVICE_PATH" x |> Option.map(isOne);
     DM_LV_NAME = tryFindStr "DM_LV_NAME" x;
     DM_VG_NAME = tryFindStr "DM_VG_NAME" x;
     DM_UUID = tryFindStr "DM_UUID" x;
+    MD_UUID = tryFindStr "MD_UUID" x;
   }
 
 let (|UdevAdd|_|) =
