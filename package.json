@@ -10,6 +10,7 @@
   "scripts": {
     "jest": "jest --coverage",
     "test": "dotnet fable npm-run jest",
+    "test-watch": "jest --watchAll",
     "restore": "dotnet restore",
     "buildEventListener": "rollup -c IML/EventListener/rollup-config.js",
     "postbuildEventListener": "cp-cli IML/EventListener/udev-rules dist/event-listener",
@@ -30,7 +31,7 @@
     "cp-cli": "^1.1.0",
     "del-cli": "^1.1.0",
     "fable-utils": "^1.0.6",
-    "jest": "^22.0.3",
+    "jest": "^22.0.4",
     "jest-fable-preprocessor": "^1.3.3",
     "pre-commit": "1.2.2",
     "rollup": "^0.53.3",

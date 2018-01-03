@@ -1,15 +1,16 @@
 
 module IML.DeviceScannerDaemon.TestFixtures
 
-open Fable.PowerPack
-open IML.JsonDecoders
+open Fable.Import
+open Fable.Import.Node.PowerPack.LineDelimitedJsonStream
 
-let toMap =
-  Json.ofString
-    >> Result.unwrapResult
-    >> unwrapObject
+let toJson =
+  JS.JSON.parse
+    >> Json
 
-let addObj = toMap """
+let infoUdevJson = toJson """{ "ACTION": "info" }"""
+
+let addUdevJson = toJson """
 {
   "ACTION": "add",
   "DEVLINKS": "/dev/disk/by-id/ata-VBOX_HARDDISK_VB304a0a0f-15e93f07-part1 /dev/disk/by-path/pci-0000:00:01.1-ata-1.0-part1",
@@ -58,7 +59,156 @@ let addObj = toMap """
 }
 """
 
-let addMdraidObj = toMap """
+let addDiskUdevJson = toJson """
+{
+  "ACTION": "add",
+  "DEVLINKS": "/dev/disk/by-id/ata-VBOX_HARDDISK_VB304a0a0f-15e93f07-part1 /dev/disk/by-path/pci-0000:00:01.1-ata-1.0-part1",
+  "DEVNAME": "/dev/sdb1",
+  "DEVPATH": "/devices/pci0000:00/0000:00:01.1/ata1/host1/target1:0:0/1:0:0:0/block/sdb/sdb1",
+  "DEVTYPE": "disk",
+  "ID_ATA": "1",
+  "ID_ATA_FEATURE_SET_PM": 1,
+  "ID_ATA_FEATURE_SET_PM_ENABLED": 1,
+  "ID_ATA_WRITE_CACHE": 1,
+  "ID_ATA_WRITE_CACHE_ENABLED": 1,
+  "ID_BUS": "ata",
+  "ID_MODEL": "VBOX_HARDDISK",
+  "ID_MODEL_ENC": "VBOX HARDDISK",
+  "ID_PART_ENTRY_DISK": "8:16",
+  "ID_PART_ENTRY_NUMBER": "1",
+  "ID_PART_ENTRY_OFFSET": "2048",
+  "ID_PART_ENTRY_SCHEME": "dos",
+  "ID_PART_ENTRY_SIZE": "2048",
+  "ID_PART_ENTRY_TYPE": "0x83",
+  "ID_PART_TABLE_TYPE": "dos",
+  "ID_PATH": "pci-0000:00:01.1-ata-1.0",
+  "ID_PATH_TAG": "pci-0000_00_01_1-ata-1_0",
+  "ID_REVISION": "1.0",
+  "ID_SERIAL": "VBOX_HARDDISK_VB304a0a0f-15e93f07",
+  "ID_FS_TYPE": "LVM2_member",
+  "ID_FS_USAGE": "filesystem",
+  "ID_SERIAL_SHORT": "VB304a0a0f-15e93f07",
+  "ID_TYPE": "disk",
+  "MAJOR": "8",
+  "MINOR": "17",
+  "SEQNUM": "1566",
+  "SUBSYSTEM": "block",
+  "TAGS": ":systemd:",
+  "USEC_INITIALIZED": "842",
+  "IML_SIZE": "81784832",
+  "IML_SCSI_80": "80",
+  "IML_SCSI_83": "83",
+  "IML_IS_RO": "1",
+  "DM_MULTIPATH_DEVICE_PATH": "1",
+  "DM_LV_NAME": "swap",
+  "DM_VG_NAME": "centos",
+  "DM_UUID": "LVM-pV8TgNKMJVNrolJgMhVwg4CAeFFAIMC83IU1hvimWWlvmd5xQddtMIqRtjwOuKTz",
+  "DM_SLAVE_MMS": "252:2",
+  "DM_VG_SIZE": " 20946354176B"
+}
+"""
+
+let addDmUdevJson = toJson """
+{
+  "ACTION": "add",
+  "DEVLINKS": "/dev/disk/by-id/ata-VBOX_HARDDISK_VB304a0a0f-15e93f07-part1 /dev/disk/by-path/pci-0000:00:01.1-ata-1.0-part1",
+  "DEVNAME": "/dev/sdb1",
+  "DEVPATH": "/devices/pci0000:00/0000:00:01.1/ata1/host1/target1:0:0/1:0:0:0/block/sdb/sdb1",
+  "DEVTYPE": "disk",
+  "ID_ATA": "1",
+  "ID_ATA_FEATURE_SET_PM": 1,
+  "ID_ATA_FEATURE_SET_PM_ENABLED": 1,
+  "ID_ATA_WRITE_CACHE": 1,
+  "ID_ATA_WRITE_CACHE_ENABLED": 1,
+  "ID_BUS": "ata",
+  "ID_MODEL": "VBOX_HARDDISK",
+  "ID_MODEL_ENC": "VBOX HARDDISK",
+  "ID_PART_ENTRY_DISK": "8:16",
+  "ID_PART_ENTRY_NUMBER": "1",
+  "ID_PART_ENTRY_OFFSET": "2048",
+  "ID_PART_ENTRY_SCHEME": "dos",
+  "ID_PART_ENTRY_SIZE": "2048",
+  "ID_PART_ENTRY_TYPE": "0x83",
+  "ID_PART_TABLE_TYPE": "dos",
+  "ID_PATH": "pci-0000:00:01.1-ata-1.0",
+  "ID_PATH_TAG": "pci-0000_00_01_1-ata-1_0",
+  "ID_REVISION": "1.0",
+  "ID_SERIAL": "VBOX_HARDDISK_VB304a0a0f-15e93f07",
+  "ID_FS_TYPE": "LVM2_member",
+  "ID_FS_USAGE": "filesystem",
+  "ID_SERIAL_SHORT": "VB304a0a0f-15e93f07",
+  "ID_TYPE": "disk",
+  "MAJOR": "8",
+  "MINOR": "17",
+  "SEQNUM": "1566",
+  "SUBSYSTEM": "block",
+  "TAGS": ":systemd:",
+  "USEC_INITIALIZED": "842",
+  "IML_SIZE": "81784832",
+  "IML_SCSI_80": "80",
+  "IML_SCSI_83": "83",
+  "IML_IS_RO": "1",
+  "IML_DM_SLAVE_MMS": "8:16 8:32",
+  "IML_DM_VG_SIZE": "  21466447872B",
+  "DM_MULTIPATH_DEVICE_PATH": "1",
+  "DM_LV_NAME": "swap",
+  "DM_VG_NAME": "centos",
+  "DM_UUID": "LVM-KHoa9g8GBwQJMHjQtL77pGj6b9R1YWrlEDy4qFTQ3cgVnmyhy1zB2cJx2l5yE26D",
+  "DM_SLAVE_MMS": "252:2",
+  "DM_VG_SIZE": " 20946354176B"
+}
+"""
+
+let changeUdevJson = toJson """
+{
+  "ACTION": "add",
+  "DEVLINKS": "/dev/disk/by-id/ata-VBOX_HARDDISK_VB304a0a0f-15e93f07-part1 /dev/disk/by-path/pci-0000:00:01.1-ata-1.0-part1",
+  "DEVNAME": "/dev/sdb1",
+  "DEVPATH": "/devices/pci0000:00/0000:00:01.1/ata1/host1/target1:0:0/1:0:0:0/block/sdb/sdb1",
+  "DEVTYPE": "partition",
+  "ID_ATA": "1",
+  "ID_ATA_FEATURE_SET_PM": 1,
+  "ID_ATA_FEATURE_SET_PM_ENABLED": 1,
+  "ID_ATA_WRITE_CACHE": 1,
+  "ID_ATA_WRITE_CACHE_ENABLED": 1,
+  "ID_BUS": "ata",
+  "ID_MODEL": "VBOX_HARDDISK",
+  "ID_MODEL_ENC": "VBOX HARDDISK",
+  "ID_PART_ENTRY_DISK": "8:16",
+  "ID_PART_ENTRY_NUMBER": "1",
+  "ID_PART_ENTRY_OFFSET": "2048",
+  "ID_PART_ENTRY_SCHEME": "dos",
+  "ID_PART_ENTRY_SIZE": "2048",
+  "ID_PART_ENTRY_TYPE": "0x83",
+  "ID_PART_TABLE_TYPE": "dos",
+  "ID_PATH": "pci-0000:00:01.1-ata-1.0",
+  "ID_PATH_TAG": "pci-0000_00_01_1-ata-1_0",
+  "ID_REVISION": "1.0",
+  "ID_SERIAL": "VBOX_HARDDISK_VB304a0a0f-15e93f07",
+  "ID_FS_TYPE": "LVM2_member",
+  "ID_FS_USAGE": "filesystem",
+  "ID_SERIAL_SHORT": "VB304a0a0f-15e93f07",
+  "ID_TYPE": "disk",
+  "MAJOR": "8",
+  "MINOR": "17",
+  "SEQNUM": "1566",
+  "SUBSYSTEM": "block",
+  "TAGS": ":systemd:",
+  "USEC_INITIALIZED": "842",
+  "IML_SIZE": "81784832",
+  "IML_SCSI_80": "80",
+  "IML_SCSI_83": "83",
+  "IML_IS_RO": "1",
+  "DM_MULTIPATH_DEVICE_PATH": "1",
+  "DM_LV_NAME": "swap",
+  "DM_VG_NAME": "centos",
+  "DM_UUID": "LVM-pV8TgNKMJVNrolJgMhVwg4CAeFFAIMC83IU1hvimWWlvmd5xQddtMIqRtjwOuKTz",
+  "DM_SLAVE_MMS": "252:2",
+  "DM_VG_SIZE": " 20946354176B"
+}
+"""
+
+let addMdraidUdevJson = toJson """
 {
   "ACTION": "add",
   "DEVLINKS": "/dev/disk/by-id/md-name-lotus-32vm6:0 /dev/disk/by-id/md-uuid-685b40ee:f2bc2028:f056f6d2:e292c910",
@@ -86,7 +236,7 @@ let addMdraidObj = toMap """
 }
 """
 
-let removeObj = toMap """
+let removeUdevJson = toJson """
 {
   "ACTION": "remove",
   "DEVLINKS": "/dev/disk/by-id/ata-VBOX_HARDDISK_VB304a0a0f-15e93f07-part1 /dev/disk/by-path/pci-0000:00:01.1-ata-1.0-part1",
@@ -123,7 +273,7 @@ let removeObj = toMap """
 }
 """
 
-let createZdataset = toMap """
+let createZdatasetJson = toJson """
 {
   "IFS": "  ",
   "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
@@ -163,7 +313,7 @@ let createZdataset = toMap """
 }
 """
 
-let createSecondZdataset = toMap """
+let createSecondZdatasetJson = toJson """
 {
   "IFS": "  ",
   "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
@@ -203,7 +353,7 @@ let createSecondZdataset = toMap """
 }
 """
 
-let destroyZdataset = toMap """
+let destroyZdatasetJson = toJson """
 {
   "IFS": "  ",
   "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
@@ -243,7 +393,7 @@ let destroyZdataset = toMap """
 }
 """
 
-let createZpool = toMap """
+let createZpoolJson = toJson """
 {
   "IFS": "  ",
   "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
@@ -276,7 +426,7 @@ let createZpool = toMap """
 }
 """
 
-let importZpool = toMap """
+let importZpoolJson = toJson """
 {
   "IFS": "  ",
   "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
@@ -310,7 +460,7 @@ let importZpool = toMap """
 """
 
 /// export pool userspace command
-let exportZpool = toMap """
+let exportZpoolJson = toJson """
 {
   "IFS": "  ",
   "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
@@ -344,7 +494,7 @@ let exportZpool = toMap """
 """
 
 /// destroy pool userspace command
-let destroyZpool = toMap """
+let destroyZpoolJson = toJson """
 {
   "IFS": "  ",
   "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
@@ -377,7 +527,7 @@ let destroyZpool = toMap """
 }
 """
 
-let createZpoolProperty = toMap """
+let createZpoolPropertyJson = toJson """
 {
   "IFS": "  ",
   "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
@@ -414,7 +564,7 @@ let createZpoolProperty = toMap """
   "_": "/usr/bin/printenv"
 }
 """
-let resetZpoolProperty = toMap """
+let resetZpoolPropertyJson = toJson """
 {
   "IFS": "  ",
   "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
@@ -452,7 +602,7 @@ let resetZpoolProperty = toMap """
 }
 """
 
-let createZpoolPropertyTwo = toMap """
+let createZpoolPropertyTwoJson = toJson """
 {
   "IFS": "  ",
   "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
@@ -490,7 +640,7 @@ let createZpoolPropertyTwo = toMap """
 }
 """
 
-let createZdatasetProperty = toMap """
+let createZdatasetPropertyJson = toJson """
 {
   "IFS": "  ",
   "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
@@ -530,7 +680,7 @@ let createZdatasetProperty = toMap """
 }
 """
 
-let resetZdatasetProperty = toMap """
+let resetZdatasetPropertyJson = toJson """
 {
   "IFS": "  ",
   "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
@@ -570,7 +720,7 @@ let resetZdatasetProperty = toMap """
 }
 """
 
-let createZdatasetPropertyTwo = toMap """
+let createZdatasetPropertyTwoJson = toJson """
 {
   "IFS": "  ",
   "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
@@ -610,7 +760,7 @@ let createZdatasetPropertyTwo = toMap """
 }
 """
 
-let createSecondZdatasetProperty = toMap """
+let createSecondZdatasetPropertyJson = toJson """
 {
   "IFS": "  ",
   "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
@@ -650,7 +800,7 @@ let createSecondZdatasetProperty = toMap """
 }
 """
 
-let createSecondZdatasetPropertyTwo = toMap """
+let createSecondZdatasetPropertyTwoJson = toJson """
 {
   "IFS": "  ",
   "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
