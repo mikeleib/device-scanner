@@ -5,33 +5,60 @@
 module IML.DeviceScannerDaemon.Server
 
 open Fable.Import.Node
-open Fable.Import.Node.PowerPack
 open Fable.Import.Node.PowerPack.Stream
-open Fable.Import.JS
+open Fable.Import
 open Fable.Core.JsInterop
 open IML.DeviceScannerDaemon.Handlers
-open NodeHelpers
+
+let counterFactory () =
+  let mutable count = 1
+
+  fun () ->
+    count <- count + 1
+    count
+
+let counter = counterFactory()
+
+let mutable conns = Map.empty<int, Net.Socket>
+
+let removeConn (i) () =
+    conns <- Map.filter (fun k _ -> k <> i) conns
+
+let writeConns x =
+  conns <- Map.filter (fun _ (v:Net.Socket) -> not (!!v?destroyed)) conns
+
+  conns
+    |> Map.iter (fun _ c -> Writable.write x c |> ignore)
 
 let serverHandler (c:Net.Socket):unit =
+  let index = counter()
+
+  conns <- Map.add index c conns
+
+  let remove = removeConn index
   c
-    |> LineDelimitedJsonStream.getJsonStream()
-    |> error (fun (e:Error) ->
-      console.error ("Unable to parse message " + e.message)
+    |> Readable.onEnd (remove)
+    |> LineDelimitedJson.create()
+    |> Readable.onError (fun (e:JS.Error) ->
+      JS.console.error ("Unable to parse message " + e.message)
+
+      remove()
       c.``end``()
     )
-    |> iter (dataHandler (``end`` c))
+    |> map dataHandler
+    |> map (
+      toJson
+        >> fun x -> x + "\n"
+        >> buffer.Buffer.from
+        >> Ok
+    )
+    |> iter writeConns
     |> ignore
 
-let opts = createEmpty<Net.CreateServerOptions>
-opts.allowHalfOpen <- Some true
+let private server = net.createServer(serverHandler)
 
-let private server = Net.createServer(opts, serverHandler)
-let private r e =
-  e
-  |> raise
-  |> ignore
-
-server.on("error", r)
+server
+  |> Readable.onError raise
   |> ignore
 
 let private fd = createEmpty<Net.Fd>
