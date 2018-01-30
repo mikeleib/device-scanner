@@ -1,16 +1,19 @@
+// Copyright (c) 2018 Intel Corporation. All rights reserved. 
+// Use of this source code is governed by a MIT-style 
+// license that can be found in the LICENSE file. 
+
 
 module IML.DeviceScannerDaemon.TestFixtures
 
 open Fable.Import
-open Fable.Import.Node.PowerPack.Stream
+open IML.Types.CommandTypes
 
 let toJson =
   JS.JSON.parse
-    >> LineDelimitedJson.Json
 
-let infoUdevJson = toJson """{ "ACTION": "info" }"""
+let infoUdev = Info
 
-let addUdevJson = toJson """
+let addUdev = UdevCommand.Add """
 {
   "ACTION": "add",
   "DEVLINKS": "/dev/disk/by-id/ata-VBOX_HARDDISK_VB304a0a0f-15e93f07-part1 /dev/disk/by-path/pci-0000:00:01.1-ata-1.0-part1",
@@ -59,7 +62,7 @@ let addUdevJson = toJson """
 }
 """
 
-let addDiskUdevJson = toJson """
+let addDiskUdev = UdevCommand.Add """
 {
   "ACTION": "add",
   "DEVLINKS": "/dev/disk/by-id/ata-VBOX_HARDDISK_VB304a0a0f-15e93f07-part1 /dev/disk/by-path/pci-0000:00:01.1-ata-1.0-part1",
@@ -108,7 +111,7 @@ let addDiskUdevJson = toJson """
 }
 """
 
-let addDmUdevJson = toJson """
+let addDmUdev = UdevCommand.Add """
 {
   "ACTION": "add",
   "DEVLINKS": "/dev/disk/by-id/ata-VBOX_HARDDISK_VB304a0a0f-15e93f07-part1 /dev/disk/by-path/pci-0000:00:01.1-ata-1.0-part1",
@@ -159,7 +162,7 @@ let addDmUdevJson = toJson """
 }
 """
 
-let changeUdevJson = toJson """
+let changeUdev = UdevCommand.Change """
 {
   "ACTION": "add",
   "DEVLINKS": "/dev/disk/by-id/ata-VBOX_HARDDISK_VB304a0a0f-15e93f07-part1 /dev/disk/by-path/pci-0000:00:01.1-ata-1.0-part1",
@@ -208,7 +211,7 @@ let changeUdevJson = toJson """
 }
 """
 
-let addMdraidUdevJson = toJson """
+let addMdraidUdev = UdevCommand.Add """
 {
   "ACTION": "add",
   "DEVLINKS": "/dev/disk/by-id/md-name-lotus-32vm6:0 /dev/disk/by-id/md-uuid-685b40ee:f2bc2028:f056f6d2:e292c910",
@@ -236,7 +239,7 @@ let addMdraidUdevJson = toJson """
 }
 """
 
-let removeUdevJson = toJson """
+let removeUdev = UdevCommand.Remove """
 {
   "ACTION": "remove",
   "DEVLINKS": "/dev/disk/by-id/ata-VBOX_HARDDISK_VB304a0a0f-15e93f07-part1 /dev/disk/by-path/pci-0000:00:01.1-ata-1.0-part1",

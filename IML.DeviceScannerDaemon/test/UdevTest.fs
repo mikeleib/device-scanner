@@ -1,29 +1,30 @@
+// Copyright (c) 2018 Intel Corporation. All rights reserved. 
+// Use of this source code is governed by a MIT-style 
+// license that can be found in the LICENSE file. 
+
 module IML.DeviceScannerDaemon.UdevTest
 
-open IML.DeviceScannerDaemon.TestFixtures
+open TestFixtures
 open Udev
 open Fable.Import.Jest
 open Matchers
 
-let addMatch = function
-  | UdevAdd x -> Some x
-  | _ -> None
 
-let removeMatch = function
-  | UdevRemove x -> Some x
-  | _ -> None
+let matcher x =
+  x
+    |> update Map.empty
+    |> Map.toList
+    |> toMatchSnapshot
 
 test "Matching Events" <| fun () ->
-  expect.assertions 6
+  expect.assertions 5
 
-  toMatchSnapshot (addMatch addUdevJson)
+  matcher addUdev
 
-  toMatchSnapshot (addMatch addDiskUdevJson)
+  matcher addDiskUdev
 
-  toMatchSnapshot (addMatch addDmUdevJson)
+  matcher addDmUdev
 
-  toMatchSnapshot (removeMatch removeUdevJson)
+  matcher removeUdev
 
-  toMatchSnapshot (addMatch (toJson """{ "ACTION": "blah" }"""))
-
-  toMatchSnapshot (addMatch addMdraidUdevJson)
+  matcher addMdraidUdev
