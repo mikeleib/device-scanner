@@ -25,22 +25,13 @@ jobs:
         - docker run -d -it --name libzfs-dotnet -v $(pwd):/device-scanner:rw intelhpdd/libzfs-dotnet
         - docker exec -i libzfs-dotnet bash -c 'cd /device-scanner/ && npm i && npm run restore && npm test'
     - stage: deploy
-      language: csharp
-      dotnet: 2.1.4
-      mono: latest
+      language: generic
       if: branch =~ ^v\d+\.\d+\.\d+$
-      before_deploy:
-        - nvm install 8
-        - npm run restore
-        - dotnet fable npm-build
-      deploy:
-        skip_cleanup: true
-        provider: npm
-        email: "$NPM_EMAIL"
-        api_key: "$NPM_TOKEN"
-        on:
-          tags: true
-          repo: intel-hpdd/device-scanner
+      script:
+        - docker run -d -it --name libzfs-dotnet -v $(pwd):/device-scanner:rw intelhpdd/libzfs-dotnet
+        - docker exec -i libzfs-dotnet bash -c 'cd /device-scanner/ && npm i && npm run restore && dotnet fable npm-build'
+        - docker exec -i libzfs-dotnet bash -c "echo '//registry.npmjs.org/:_authToken=$NPM_TOKEN' > ~/.npmrc"
+        - docker exec -i libzfs-dotnet bash -c "npm pub"
     - stage: deploy
       if: branch =~ ^v\d+\.\d+\.\d+-.+$
       language: generic
