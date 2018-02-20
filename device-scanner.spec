@@ -38,6 +38,7 @@ on local socket to the device aggregator over HTTPS.
 %setup
 
 %build
+mozroots --import --sync
 scl enable rh-dotnet20 - << EOF
 set -e
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
