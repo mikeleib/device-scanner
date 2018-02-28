@@ -7,7 +7,7 @@ This repo provides a [persistent daemon](IML.DeviceScannerDaemon) That holds blo
 
 It also provides [listeners](IML.Listeners) that emit changes to the daemon.
 
-Finally, it also provides a proxy [proxy](IML.ScannerProxyDaemon) that transforms the unix domain socket events to HTTP POSTs.
+Finally, it also provides a [proxy](IML.ScannerProxyDaemon) that transforms the unix domain socket events to HTTP POSTs.
 
 ## Architecture
 
