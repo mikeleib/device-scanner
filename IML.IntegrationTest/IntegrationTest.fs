@@ -45,6 +45,9 @@ let setDeviceState (name:string) (state:string): State -> JS.Promise<CommandResu
 let deleteDevice (name:string): State -> JS.Promise<CommandResult<Out, Err>> =
   cmd (sprintf "echo \"1\" > /sys/block/%s/device/delete" name)
 
+let scanForDisk (hostId:string) =
+  cmd (sprintf "echo \"- - -\" > /sys/class/scsi_host/host%s/scan" hostId)
+
 let matchResultToSnapshot (r:StatefulResult<State, Out, Err>, _): unit =
   let json =
     r
@@ -67,7 +70,16 @@ testAsync "remove a device" <| fun () ->
     do! (setDeviceState "sdc" "offline") >> rollbackError (rbSetDeviceState "sdc" "running") >> ignoreCmd
     do! (deleteDevice "sdc") >> rollback (rbScanForDisk "4") >> ignoreCmd
     return! scannerInfo
-
   }
   |> startCommand "removing a device"
+  |> Promise.map matchResultToSnapshot
+
+testAsync "add a device" <| fun () ->
+  command {
+    do! (setDeviceState "sdc" "offline") >> ignoreCmd
+    do! (deleteDevice "sdc") >> rollback (rbScanForDisk "4") >> ignoreCmd
+    do! (scanForDisk "4") >> ignoreCmd
+    return! scannerInfo
+  }
+  |> startCommand "adding a device"
   |> Promise.map matchResultToSnapshot
