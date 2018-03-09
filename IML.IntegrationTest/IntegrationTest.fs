@@ -11,6 +11,7 @@ open IML.StatefulPromise.StatefulPromise
 open IML.IntegrationTestFramework.IntegrationTestFramework
 
 open Fable.Import.Jest
+open Fable.Import.Node
 open Fable.Import.Node.PowerPack
 open Fable.PowerPack.Json
 
@@ -41,13 +42,8 @@ testAsync "info event" <| fun () ->
         r
           |> resultOutput
           |> unwrapDeviceData
-          |> Map.filter (fun key _ ->
-            key <> "/devices/virtual/block/dm-0" &&
-            key <> "/devices/virtual/block/dm-1" &&
-            key <> "/devices/virtual/block/dm-2" &&
-            key <> "/devices/virtual/block/dm-3"
-          )
           |> toJson
+          |> buffer.Buffer.from
 
       toMatchSnapshot json
   )
