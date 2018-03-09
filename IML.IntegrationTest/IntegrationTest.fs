@@ -41,9 +41,8 @@ let rbScanForDisk (hostId:string) (rollbackState:RollbackState): JS.Promise<Roll
 let setDeviceState (name:string) (state:string): State -> JS.Promise<CommandResult<Out, Err>> =
   cmd (sprintf "echo \"%s\" > /sys/block/%s/device/state" state name)
 
-let deleteDevice (name:string) (hostId:string): State -> JS.Promise<CommandResult<Out, Err>> =
+let deleteDevice (name:string): State -> JS.Promise<CommandResult<Out, Err>> =
   cmd (sprintf "echo \"1\" > /sys/block/%s/device/delete" name)
-    >> rollback (rbScanForDisk hostId)
 
 let matchResultToSnapshot (r:StatefulResult<State, Out, Err>, _): unit =
   let json =
@@ -65,7 +64,7 @@ testAsync "info event" <| fun () ->
 testAsync "remove a device" <| fun () ->
   command {
     do! (setDeviceState "sdc" "offline") >> ignoreCmd
-    do! (deleteDevice "sdc" "4") >> ignoreCmd
+    do! (deleteDevice "sdc") >> rollback (rbScanForDisk "4") >> ignoreCmd
     return! scannerInfo
 
   }
