@@ -33,10 +33,11 @@ let resultOutput: StatefulResult<State, Out, Err> -> string = function
   | Ok ((Stdout(r), _), _) -> r
   | Error (e) -> failwithf "Command failed: %A" !!e
 
-let rbScanForDisk (hostId:string) (rollbackState:RollbackState): JS.Promise<RollbackStateResult<Out, Err>> =
-  let command = sprintf "echo \"- - -\" > /sys/class/scsi_host/host%s/scan" hostId
-  command
-    |> (execShell >> (addToRollbackState command rollbackState))
+let rbScanForDisk (hostId:string): RollbackState -> RollbackCommandState =
+  rbCmd (sprintf "echo \"- - -\" > /sys/class/scsi_host/host%s/scan" hostId)
+
+let rbSetDeviceState (name:string) (state:string): RollbackState -> RollbackCommandState =
+  rbCmd (sprintf "echo \"%s\" > /sys/block/%s/device/state" state name)
 
 let setDeviceState (name:string) (state:string): State -> JS.Promise<CommandResult<Out, Err>> =
   cmd (sprintf "echo \"%s\" > /sys/block/%s/device/state" state name)
@@ -63,7 +64,7 @@ testAsync "info event" <| fun () ->
 
 testAsync "remove a device" <| fun () ->
   command {
-    do! (setDeviceState "sdc" "offline") >> ignoreCmd
+    do! (setDeviceState "sdc" "offline") >> rollbackError (rbSetDeviceState "sdc" "running") >> ignoreCmd
     do! (deleteDevice "sdc") >> rollback (rbScanForDisk "4") >> ignoreCmd
     return! scannerInfo
 
