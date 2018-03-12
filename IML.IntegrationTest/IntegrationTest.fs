@@ -5,16 +5,16 @@
 module IML.IntegrationTest.IntegrationTest
 
 open Fable.Core.JsInterop
-open Fable.PowerPack
 open IML.StatefulPromise.StatefulPromise
 open IML.IntegrationTestFramework.IntegrationTestFramework
 
 open Fable.Import
 open Fable.Import.Jest
-open Fable.Import.Jest.Matchers
+open Matchers
 open Fable.Import.Node
 open Fable.Import.Node.PowerPack
-open Fable.PowerPack.Json
+open Fable.PowerPack
+open Json
 
 let scannerInfo =
   pipeToShellCmd "echo '\"Info\"'" "socat - UNIX-CONNECT:/var/run/device-scanner.sock"
