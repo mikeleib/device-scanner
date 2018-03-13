@@ -76,8 +76,8 @@ testAsync "remove a device" <| fun () ->
 
 testAsync "add a device" <| fun () ->
   command {
-    do! (setDeviceState "sdc" "offline") >> ignoreCmd
-    do! (deleteDevice "sdc") >> rollback (rbScanForDisk "4") >> ignoreCmd
+    do! (setDeviceState "sdc" "offline") >> rollbackError (rbSetDeviceState "sdc" "running") >> ignoreCmd
+    do! (deleteDevice "sdc") >> rollbackError (rbScanForDisk "4") >> ignoreCmd
     do! (scanForDisk "4") >> ignoreCmd
     return! scannerInfo
   }
