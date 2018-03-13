@@ -39,6 +39,12 @@ let rbScanForDisk (hostId:string): RollbackState -> RollbackCommandState =
 let rbSetDeviceState (name:string) (state:string): RollbackState -> RollbackCommandState =
   rbCmd (sprintf "echo \"%s\" > /sys/block/%s/device/state" state name)
 
+let rbRmPart (device:string) (partId:int) =
+  rbCmd (sprintf "parted %s -s rm %d" device partId)
+
+let rbWipefs (device:string) =
+  rbCmd (sprintf "wipefs -a %s" device)
+
 let setDeviceState (name:string) (state:string): State -> JS.Promise<CommandResult<Out, Err>> =
   cmd (sprintf "echo \"%s\" > /sys/block/%s/device/state" state name)
 
@@ -47,6 +53,15 @@ let deleteDevice (name:string): State -> JS.Promise<CommandResult<Out, Err>> =
 
 let scanForDisk (hostId:string) =
   cmd (sprintf "echo \"- - -\" > /sys/class/scsi_host/host%s/scan" hostId)
+
+let mkLabel (disk:string) (label:string) =
+  cmd (sprintf "parted %s -s mklabel %s" disk label)
+
+let mkPart (disk:string) (diskType:string) (start:int) (finish:int) =
+  cmd (sprintf "parted %s -s mkpart %s %d %d" disk diskType start finish)
+
+let mkfsExt4 (disk:string) =
+  cmd (sprintf "mkfs.ext4 %s" disk)
 
 let matchResultToSnapshot (r:StatefulResult<State, Out, Err>, _): unit =
   let json =
@@ -82,4 +97,14 @@ testAsync "add a device" <| fun () ->
     return! scannerInfo
   }
   |> startCommand "adding a device"
+  |> Promise.map matchResultToSnapshot
+
+testAsync "create a partition" <| fun () ->
+  command {
+    do! (mkLabel "/dev/sdc" "msdos") >> ignoreCmd
+    do! (mkPart "/dev/sdc" "primary" 1 100) >> rollback (rbRmPart "/dev/sdc" 1) >> ignoreCmd
+    do! (mkfsExt4 "/dev/sdc1") >> rollback (rbWipefs "/dev/sdc1") >> ignoreCmd
+    return! scannerInfo
+  }
+  |> startCommand "creating a partition"
   |> Promise.map matchResultToSnapshot
